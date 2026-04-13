@@ -18,7 +18,8 @@ const ChatBot = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5001/api/ai/chat', {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+      const response = await fetch(`${apiUrl}/ai/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

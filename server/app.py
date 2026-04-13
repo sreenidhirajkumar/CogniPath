@@ -13,18 +13,33 @@ load_dotenv()
 app = Flask(__name__)
 # CORS(app, resources={r"/*": {"origins": "*"}})
 # CORS(app, resources={r"/*": {"origins": ["http://localhost:5173", "http://127.0.0.1:5173"], "allow_headers": ["Content-Type", "Authorization"], "methods": ["GET", "POST", "OPTIONS", "PUT", "DELETE"], "supports_credentials": True}})
-CORS(app, resources={r"/*": {"origins": ["http://localhost:5173", "http://127.0.0.1:5173"]}}, supports_credentials=True)
+
+# Allow frontend from env var, or fallback to local
+frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:5173')
+# Allow multiple origins by checking if it contains commas
+origins = [origin.strip() for origin in frontend_url.split(',')] if ',' in frontend_url else [frontend_url]
+# We also include typical local URLs to cover bases during testing
+origins.extend(["http://localhost:5173", "http://127.0.0.1:5173"])
+
+CORS(app, resources={r"/*": {"origins": origins}}, supports_credentials=True)
 
 
 
 from database import db
 
 # Database Configuration
-db_user = os.getenv('DB_USER', 'root')
-db_password = os.getenv('DB_PASSWORD', '')
-db_host = os.getenv('DB_HOST', 'localhost')
-db_name = os.getenv('DB_NAME', 'learning_engine')
-app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+mysqlconnector://{db_user}:{db_password}@{db_host}/{db_name}'
+database_url = os.getenv('DATABASE_URL')
+if database_url:
+    # Render uses 'postgres://' but SQLAlchemy requires 'postgresql://'
+    if database_url.startswith("postgres://"):
+        database_url = database_url.replace("postgres://", "postgresql://", 1)
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+else:
+    db_user = os.getenv('DB_USER', 'root')
+    db_password = os.getenv('DB_PASSWORD', '')
+    db_host = os.getenv('DB_HOST', 'localhost')
+    db_name = os.getenv('DB_NAME', 'learning_engine')
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+mysqlconnector://{db_user}:{db_password}@{db_host}/{db_name}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev_secret_key')
 
