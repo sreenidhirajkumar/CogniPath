@@ -9,3 +9,5 @@ scikit-learn
 pytest
 gunicorn
 psycopg2-binary
+google-generativeai
+PyJWT
