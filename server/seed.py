@@ -5,13 +5,13 @@ from werkzeug.security import generate_password_hash
 
 def seed_data():
     with app.app_context():
-        db.drop_all()
+        # db.drop_all() # Removed to prevent accidental deletion in production
         db.create_all()
         
         # Check if data exists
-        # if Course.query.first():
-        #     print("Database already seeded.")
-        #     return
+        if Course.query.first():
+            print("Database already seeded.")
+            return
 
         # Create Goals
         goals = [
